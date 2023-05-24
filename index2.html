@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Game</title>
+  </head>
+  <body>
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <script>
+      var canvas = document.getElementById("canvas");
+      var ctx = canvas.getContext("2d");
+      let playerSize = 20;
+      let enemySize = 25;
+      var x1 = 50; // Initial x position of the first circle
+      var y1 = 250; // Initial y position of the first circle
+      var dx1 = 2; // Amount to move the first circle on each frame
+      let numEnemies = 6;
+      let enemies = [];
+      let health = 100; // Initial health value
+      let timer = 0;
+      let speed = 20;
+      let yvel = 0;
+      function getRandomY() {
+        return Math.floor(Math.random() * canvas.height);
+      }
+
+      for (let i = 0; i < numEnemies; i++) {
+        enemies.push({
+          x: 550,
+          y: getRandomY(),
+        });
+      }
+
+      function detectCollision(x, y, r, x2, y2, r2) {
+        var dx = x - x2;
+        var dy = y - y2;
+        var distance = Math.sqrt(dx * dx + dy * dy);
+        return distance < r + r2;
+      }
+
+      function draw() {
+        drawBackground(); // Draw the background
+        drawTimer(); // Draw the timer
+        ctx.fillStyle = "red"; // Set the fill color to red
+        ctx.fillRect(10, 10, health, 10); // Draw a rectangle representing the health bar
+
+        ctx.fillStyle = "white"; // Set the fill color to white
+        ctx.font = "24px Arial"; // Set the font size and family
+        ctx.fillText(yvel, 100, 100)
+        if (health <= 0) {
+          ctx.fillText("You Died: Press f5 or cmd + r to restart", 10, 30); // Draw the score text
+        } else {
+          ctx.fillText("Health: " + health, 10, 50); // Draw the score text
+        }
+
+        drawPlayer(); // Draw the first circle
+        drawEnemies(); // Draw the second circle
+
+        //x1 += dx1; // Update the x position of the first circle
+
+        // If the first circle reaches the right edge of the canvas, reset its position to the left
+        if (x1 > canvas.width) {
+          x1 = 50;
+        }
+
+        // If the second circle reaches the left edge of the canvas, reset its position to the right
+
+        requestAnimationFrame(draw); // Call the draw function again on the next frame
+      }
+
+      function drawEnemies() {
+        for (let i = 0; i < enemies.length; i++) {
+          ctx.beginPath(); // Start a new path
+          ctx.arc(enemies[i].x, enemies[i].y, enemySize, 0, 2 * Math.PI); // Draw the first circle at (x1, y1) with a radius of 25
+          ctx.fillStyle = "yellow"; // Set the fill color to red
+          ctx.fill(); // Fill the first circle with the current fill color
+
+          //detect collision
+          if (
+            detectCollision(
+              x1,
+              y1,
+              playerSize,
+              enemies[i].x,
+              enemies[i].y,
+              enemySize
+            )
+          ) {
+            health -= 10;
+            enemies[i].x = 550;
+            enemies[i].y = getRandomY();
+          }
+
+          enemies[i].x -= 2 + timer * 0.005;
+          if (enemies[i].x < 0) {
+            enemies[i].x = 550;
+            enemies[i].y = getRandomY();
+          }
+        }
+      }
+
+      function drawTimer() {
+        if (health > 0) timer++;
+        ctx.fillStyle = "white"; // Set the fill color to white
+        ctx.font = "24px Arial"; // Set the font size and family
+        ctx.fillText("Time: " + timer, 10, 80); // Draw the score text
+      }
+      function drawPlayer() {
+        if (health <= 0) {
+          playerSize = playerSize > 0 ? playerSize - 0.5 : 0;
+        } else {
+          // Update the player's y position
+          y1 += yvel;
+          yvel += 0.5;
+        }
+        if(y1 > canvas.height) {
+          y1 = canvas.height;
+          yvel = 0;
+        }else if(y1 < 0) {
+          y1 = 0;
+        }
+        ctx.beginPath(); // Start a new path
+        ctx.arc(x1, y1, playerSize, 0, 2 * Math.PI); // Draw the first circle at (x1, y1) with a radius of 25
+        ctx.fillStyle = "red"; // Set the fill color to red
+        ctx.fill(); // Fill the first circle with the current fill color
+      }
+      function drawBackground() {
+        if (health <= 0) {
+          ctx.fillStyle = "red"; // Set the fill color to green
+          ctx.fillRect(0, 0, canvas.width, canvas.height); // Draw a rectangle representing the health bar
+        } else {
+          ctx.fillStyle = "#F000DA"; // Set the fill color to blue
+          ctx.fillRect(0, 0, canvas.width, canvas.height); // Draw a rectangle that covers the entire canvas
+        }
+      }
+
+      window.addEventListener("keydown", function (event) {
+        // Handle keyboard input here!
+        console.log(event.keyCode);
+        if (event.keyCode == 38) {
+          y1 -= speed;
+        } else if (event.keyCode == 40) {
+          y1 += speed;
+        } else if (event.keyCode == 37) {
+          x1 -= speed;
+        } else if (event.keyCode == 39) {
+          x1 += speed;
+        } else if (event.keyCode == 32) {
+          yvel = -7;
+        }
+      });
+
+      requestAnimationFrame(draw);
+    </script>
+  </body>
+</html>
